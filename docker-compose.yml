@@ -1,0 +1,69 @@
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-finbot}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-finbot}
+      POSTGRES_DB: ${POSTGRES_DB:-finbot}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-finbot} -d ${POSTGRES_DB:-finbot}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - finbot-net
+
+  api:
+    build:
+      context: ./finbot-api
+      target: dev
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: ${DATABASE_URL:-postgres://finbot:finbot@db:5432/finbot}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8081}
+    ports:
+      - "${API_PORT:-3000}:3000"
+    volumes:
+      - ./finbot-api:/app
+      - api-node-modules:/app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - finbot-net
+
+  web:
+    build:
+      context: ./finbot
+      target: dev
+    restart: unless-stopped
+    environment:
+      EXPO_NO_TELEMETRY: "1"
+      # Seam for connecting physical devices / emulators to the Metro bundler.
+      # Leave unset for browser-based web dev; set to your host LAN IP when needed.
+      REACT_NATIVE_PACKAGER_HOSTNAME: ${REACT_NATIVE_PACKAGER_HOSTNAME:-}
+    ports:
+      - "${WEB_PORT:-8081}:8081"
+    volumes:
+      - ./finbot:/app
+      - web-node-modules:/app/node_modules
+    depends_on:
+      - api
+    networks:
+      - finbot-net
+
+volumes:
+  db-data:
+  api-node-modules:
+  web-node-modules:
+
+networks:
+  finbot-net:
+    driver: bridge

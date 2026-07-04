@@ -1,0 +1,11 @@
+# This repo version-controls only the Docker Compose dev-environment setup.
+# The inner apps are their own repositories that each dev clones separately,
+# so their contents must never be tracked or pushed from the parent repo.
+finbot/
+finbot-api/
+
+# Local environment secrets (keep .env.example tracked).
+.env
+
+# macOS
+.DS_Store

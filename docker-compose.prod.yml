@@ -1,0 +1,38 @@
+# Production seam / override skeleton.
+#
+# This file is intentionally NOT part of the default dev flow. It selects the
+# "prod" build targets, drops the source bind mounts (so the image is
+# self-contained and immutable), and tightens restart policies.
+#
+# Usage (illustrative):
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+#
+# Before using in a real deployment you will still want to:
+#   - manage secrets outside of a committed .env (e.g. a secrets manager)
+#   - front the API/web with a reverse proxy + TLS
+#   - point DATABASE_URL at a managed Postgres (or keep the db service with a
+#     hardened config + backups)
+services:
+  db:
+    restart: always
+    ports: []
+
+  api:
+    build:
+      context: ./finbot-api
+      target: prod
+    restart: always
+    environment:
+      NODE_ENV: production
+    # No source bind mounts in prod: the built image is the source of truth.
+    volumes: []
+    command: ["node", "dist/server.js"]
+
+  web:
+    build:
+      context: ./finbot
+      target: prod
+    restart: always
+    volumes: []
+    # The prod target exports a static web bundle served by a lightweight
+    # static file server. See finbot/Dockerfile "prod" stage.
