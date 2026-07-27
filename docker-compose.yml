@@ -1,7 +1,9 @@
 services:
   db:
-    image: postgres:16
+    image: pgvector/pgvector:pg16
     restart: unless-stopped
+    env_file:
+      - ./.env
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-finbot}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-finbot}
@@ -23,6 +25,8 @@ services:
       context: ./finbot-api
       target: dev
     restart: unless-stopped
+    env_file:
+      - ./.env
     environment:
       NODE_ENV: development
       PORT: 3000
@@ -44,6 +48,8 @@ services:
       context: ./finbot
       target: dev
     restart: unless-stopped
+    env_file:
+      - ./.env
     environment:
       EXPO_NO_TELEMETRY: "1"
       # Seam for connecting physical devices / emulators to the Metro bundler.
