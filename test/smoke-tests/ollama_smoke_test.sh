@@ -4,9 +4,7 @@ set -euo pipefail
 # Simple smoke test for Ollama in docker-compose
 # - starts compose (build)
 # - waits for Ollama to accept connections on localhost:11434
-# - checks common health endpoints
-# - attempts a sample generation via common REST endpoints
-# - falls back to running the ollama CLI inside the container
+# - attempts a sample generation via REST endpoint
 
 COMPOSE_CMD="docker compose"
 CONTAINER_NAME="finbot-app-ollama-1"
