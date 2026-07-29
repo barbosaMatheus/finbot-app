@@ -32,6 +32,7 @@ services:
       PORT: 3000
       DATABASE_URL: ${DATABASE_URL:-postgres://finbot:finbot@db:5432/finbot}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8081}
+      OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
     ports:
       - "${API_PORT:-3000}:3000"
     volumes:
@@ -65,10 +66,30 @@ services:
     networks:
       - finbot-net
 
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    volumes:
+      - ollama-data:/root/.ollama
+    ports:
+      - "11434:11434"
+    environment:
+      - OLLAMA_KEEP_ALIVE=24h  # keeps models loaded for faster responses
+    entrypoint: >
+      sh -c "
+        ollama serve &
+        sleep 5 &&
+        ollama pull tinyllama &&
+        wait
+      "
+    networks:
+      - finbot-net
+
 volumes:
   db-data:
   api-node-modules:
   web-node-modules:
+  ollama-data:
 
 networks:
   finbot-net:
