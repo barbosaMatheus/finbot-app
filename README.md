@@ -119,9 +119,8 @@ a dev-only setup.
 **Ollama Service**
 
 - **Purpose:** A local Ollama runtime is added to `docker-compose.yml` to serve
-  a lightweight Hugging Face model (TinyLlama) for local testing. Keep model
-  lifecycle and downloads managed by Ollama rather than embedding large model
-  artifacts into the `finbot-api` image.
+  a lightweight model (TinyLlama) for local testing. Keep model lifecycle and 
+  downloads managed by Ollama.
 - **Compose file:** See [docker-compose.yml](docker-compose.yml) for the
   `ollama` service entry. It exposes port `11434` and stores models in a
   persistent Docker volume named `ollama-data`.
@@ -129,32 +128,11 @@ a dev-only setup.
   environment variable. In Compose it defaults to `http://ollama:11434` so the
   `finbot-api` can call Ollama via `http://ollama:11434` when running together
   in Compose.
-- **Hugging Face models & auth:** The Ollama container can pull models from
-  Hugging Face. If the model requires authentication, set `HUGGING_FACE_HUB_TOKEN`
-  in your top-level `.env` file before starting Compose.
 
-  Example `.env` addition:
-
-  ```bash
-  HUGGING_FACE_HUB_TOKEN=hf_...your_token_here...
-  ```
-
-- **Model selection:** The Compose `ollama` command pulls `huggingface/tiiuae/tiny-llama`
+- **Model selection:** The Compose `ollama` command pulls `tinyllama`
   by default to keep resource usage low. Change the model identifier in
   `docker-compose.yml` if you prefer a different model.
 
-**Smoke tests**
-
-- **Script path:** [test/smoke-tests/smoke_test.sh](test/smoke-tests/smoke_test.sh)
-- **What it does:**
-  - Runs `docker compose up --build -d` to start the services.
-  - Waits for the Ollama service to accept connections on `localhost:11434`.
-  - Tries a health check and attempts a sample generation via HTTP.
-- **Run it:** From the repo root run:
-
-  ```bash
-  bash test/smoke-tests/smoke_test.sh
-  ```
 
 **Notes / tips**
 
