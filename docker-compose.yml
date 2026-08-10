@@ -52,6 +52,8 @@ services:
       - ./.env
     environment:
       EXPO_NO_TELEMETRY: "1"
+      # Make Metro listen on 0.0.0.0 inside the container (not just loopback).
+      EXPO_DEVTOOLS_LISTEN_ADDRESS: "0.0.0.0"
       # Seam for connecting physical devices / emulators to the Metro bundler.
       # Leave unset for browser-based web dev; set to your host LAN IP when needed.
       REACT_NATIVE_PACKAGER_HOSTNAME: ${REACT_NATIVE_PACKAGER_HOSTNAME:-}
