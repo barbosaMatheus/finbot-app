@@ -50,9 +50,10 @@ This builds and starts:
 
 | Service | URL / Port                     | Notes                                        |
 | ------- | ------------------------------ | -------------------------------------------- |
-| `web`   | http://localhost:8081          | Expo web client with live hot reload         |
-| `api`   | http://localhost:3000/health   | Express API; `/health` reports `db` status   |
+| `web`   | `localhost:8081`               | Expo web client with live hot reload         |
+| `api`   | `localhost:3000/health`        | Express API; `/health` reports `db` status   |
 | `db`    | `localhost:5432`               | Postgres 16 (user/pass/db default `finbot`)  |
+| `ollama`| `http://ollama:11434`          | Ollama serves our model in docker            |
 
 Edit files under `finbot/src/` or `finbot-api/src/` and the changes reload
 automatically. `GET http://localhost:3000/health` returns `"db": "up"` once the
@@ -114,3 +115,27 @@ It's intentionally a skeleton — before a real deployment you'll want managed
 secrets, a reverse proxy + TLS, and a managed/hardened Postgres. The multi-stage
 Dockerfiles already expose `build` and `prod` stages so the app isn't married to
 a dev-only setup.
+
+**Ollama Service**
+
+- **Purpose:** A local Ollama runtime is added to `docker-compose.yml` to serve
+  a lightweight model (TinyLlama) for local testing. Keep model lifecycle and 
+  downloads managed by Ollama.
+- **Compose file:** See [docker-compose.yml](docker-compose.yml) for the
+  `ollama` service entry. It exposes port `11434` and stores models in a
+  persistent Docker volume named `ollama-data`.
+- **API integration:** The `api` service is configured with an `OLLAMA_URL`
+  environment variable. In Compose it defaults to `http://ollama:11434` so the
+  `finbot-api` can call Ollama via `http://ollama:11434` when running together
+  in Compose.
+
+- **Model selection:** The Compose `ollama` command pulls `tinyllama`
+  by default to keep resource usage low. Change the model identifier in
+  `docker-compose.yml` if you prefer a different model.
+
+
+**Notes / tips**
+
+- If you want the API to target a remote Ollama host instead of the Compose
+  service, set `OLLAMA_URL` in your `.env` or override the env when you run
+  Compose.
