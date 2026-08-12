@@ -36,3 +36,9 @@ services:
     volumes: []
     # The prod target exports a static web bundle served by a lightweight
     # static file server. See finbot/Dockerfile "prod" stage.
+
+  # Still opt-in here: `--profile llm`. Without this block the dev port publish
+  # and model pull would be inherited into a production deploy.
+  ollama:
+    restart: always
+    ports: []

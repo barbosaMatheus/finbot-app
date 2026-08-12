@@ -1,9 +1,14 @@
+# Dev stack. Designed to come up with a single `docker compose up --build` on a
+# fresh clone: `.env` is optional and every variable below has a working local
+# default. Copy `.env.example` to `.env` only when you need to override
+# something (real Plaid credentials, a different port, a LAN IP for a phone).
 services:
   db:
     image: pgvector/pgvector:pg16
     restart: unless-stopped
     env_file:
-      - ./.env
+      - path: ./.env
+        required: false
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-finbot}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-finbot}
@@ -24,15 +29,44 @@ services:
     build:
       context: ./finbot-api
       target: dev
+    init: true
     restart: unless-stopped
     env_file:
-      - ./.env
+      - path: ./.env
+        required: false
     environment:
       NODE_ENV: development
       PORT: 3000
       DATABASE_URL: ${DATABASE_URL:-postgres://finbot:finbot@db:5432/finbot}
-      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8081}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:${WEB_PORT:-8081}}
+      PG_VECTOR_SIZE: ${PG_VECTOR_SIZE:-768}
+      # Dev-only defaults. src/lib/jwt.ts throws without these, which would make
+      # every /auth route 500 on a fresh stack. Override in .env for anything
+      # that is not your laptop.
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-dev-only-access-secret-change-me}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dev-only-refresh-secret-change-me}
+      JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-15m}
+      JWT_REFRESH_TTL: ${JWT_REFRESH_TTL:-7d}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      COOKIE_SAME_SITE: ${COOKIE_SAME_SITE:-lax}
+      # Plaid. The stack boots without real credentials; only /plaid/* fails.
+      PLAID_CLIENT_ID: ${PLAID_CLIENT_ID:-}
+      PLAID_SECRET: ${PLAID_SECRET:-}
+      PLAID_ENV: ${PLAID_ENV:-sandbox}
+      PLAID_PRODUCTS: ${PLAID_PRODUCTS:-transactions}
+      PLAID_COUNTRY_CODES: ${PLAID_COUNTRY_CODES:-US}
+      PLAID_REDIRECT_URI: ${PLAID_REDIRECT_URI:-}
+      PLAID_ANDROID_PACKAGE_NAME: ${PLAID_ANDROID_PACKAGE_NAME:-}
+      PLAID_HOSTED_LINK_REDIRECT_URI: ${PLAID_HOSTED_LINK_REDIRECT_URI:-}
+      # Dev-only key so Plaid access tokens are still encrypted at rest locally.
+      # Generate a real one for any shared environment (see .env.example).
+      PLAID_TOKEN_ENC_KEY: ${PLAID_TOKEN_ENC_KEY:-ZGV2LW9ubHkta2V5LW5vdC1mb3ItcHJvZHVjdGlvbiE=}
+      # Unused by the API today; wired up for when the ollama profile is on.
       OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
+      SEED_TEST_DATA: ${SEED_TEST_DATA:-true}
+      TEST_USER_EMAIL: ${TEST_USER_EMAIL:-user@test.com}
+      TEST_USER_PASSWORD: ${TEST_USER_PASSWORD:-1234qwer}
+      TEST_USER_ONBOARDING_COMPLETE: ${TEST_USER_ONBOARDING_COMPLETE:-false}
     ports:
       - "${API_PORT:-3000}:3000"
     volumes:
@@ -48,42 +82,58 @@ services:
     build:
       context: ./finbot
       target: dev
+    init: true
     restart: unless-stopped
     env_file:
-      - ./.env
+      - path: ./.env
+        required: false
     environment:
       EXPO_NO_TELEMETRY: "1"
-      # Make Metro listen on 0.0.0.0 inside the container (not just loopback).
-      EXPO_DEVTOOLS_LISTEN_ADDRESS: "0.0.0.0"
-      # Seam for connecting physical devices / emulators to the Metro bundler.
-      # Leave unset for browser-based web dev; set to your host LAN IP when needed.
-      REACT_NATIVE_PACKAGER_HOSTNAME: ${REACT_NATIVE_PACKAGER_HOSTNAME:-}
+      # Metro binds 0.0.0.0 inside the container but advertises this hostname to
+      # the client, so it has to be a name the *browser* can resolve. Leaving it
+      # as the container's bridge IP breaks the HMR websocket.
+      REACT_NATIVE_PACKAGER_HOSTNAME: ${REACT_NATIVE_PACKAGER_HOSTNAME:-localhost}
+      # Inlined into the bundle by Expo. Keeps the client pointed at the API
+      # even when API_PORT is changed.
+      EXPO_PUBLIC_API_BASE_URL: ${EXPO_PUBLIC_API_BASE_URL:-http://localhost:${API_PORT:-3000}}
     ports:
       - "${WEB_PORT:-8081}:8081"
+    depends_on:
+      api:
+        condition: service_healthy
     volumes:
       - ./finbot:/app
       - web-node-modules:/app/node_modules
-    depends_on:
-      - api
     networks:
       - finbot-net
 
+  # Opt-in: `docker compose --profile llm up`. Pulling a model is a multi-GB
+  # download, and nothing in finbot-api calls Ollama yet, so it stays out of the
+  # default up.
   ollama:
     image: ollama/ollama:latest
+    profiles: ["llm"]
     restart: unless-stopped
     volumes:
       - ollama-data:/root/.ollama
     ports:
-      - "11434:11434"
+      - "${OLLAMA_PORT:-11434}:11434"
     environment:
-      - OLLAMA_KEEP_ALIVE=24h  # keeps models loaded for faster responses
-    entrypoint: >
-      sh -c "
+      OLLAMA_KEEP_ALIVE: 24h # keeps models loaded for faster responses
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
         ollama serve &
-        sleep 5 &&
-        ollama pull tinyllama &&
+        until ollama list >/dev/null 2>&1; do sleep 1; done
+        ollama pull ${OLLAMA_MODEL:-tinyllama}
         wait
-      "
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
     networks:
       - finbot-net
 

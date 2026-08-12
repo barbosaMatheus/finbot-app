@@ -12,8 +12,8 @@ changes to them are never tracked or pushed from this parent repo.
 
 ## Running with Docker (development)
 
-The root `docker-compose.yml` runs all three services together with hot reload
-for both the API and the Expo web client.
+The root `docker-compose.yml` runs the database, API, and Expo web client
+together with hot reload. Full guide: **[DOCKER.md](DOCKER.md)**.
 
 ### 1. Clone the inner app repos
 
@@ -32,13 +32,14 @@ git clone https://github.com/barbosaMatheus/finbot-api.git finbot-api
 git clone https://github.com/barbosaMatheus/finbot.git finbot
 ```
 
-### 2. Configure environment
+### 2. Configure environment (optional)
 
 ```bash
 cp .env.example .env
 ```
 
-Adjust values if you like; the defaults work out of the box.
+Compose has a working default for every variable, so this step is only needed to
+override something — most commonly your Plaid credentials.
 
 ### 3. Start everything
 
@@ -48,12 +49,12 @@ docker compose up --build
 
 This builds and starts:
 
-| Service | URL / Port                     | Notes                                        |
-| ------- | ------------------------------ | -------------------------------------------- |
-| `web`   | `localhost:8081`               | Expo web client with live hot reload         |
-| `api`   | `localhost:3000/health`        | Express API; `/health` reports `db` status   |
-| `db`    | `localhost:5432`               | Postgres 16 (user/pass/db default `finbot`)  |
-| `ollama`| `http://ollama:11434`          | Ollama serves our model in docker            |
+| Service | URL / Port                     | Notes                                          |
+| ------- | ------------------------------ | ---------------------------------------------- |
+| `web`   | `localhost:8081`               | Expo web client with live hot reload           |
+| `api`   | `localhost:3000/health`        | Express API; `/health` reports `db` status     |
+| `db`    | `localhost:5432`               | Postgres 16 + pgvector (defaults `finbot`)     |
+| `ollama`| `localhost:11434`              | Opt-in: `docker compose --profile llm up`      |
 
 Edit files under `finbot/src/` or `finbot-api/src/` and the changes reload
 automatically. `GET http://localhost:3000/health` returns `"db": "up"` once the
@@ -62,11 +63,11 @@ API can reach Postgres.
 ### How it works / reliability notes
 
 - Each container installs its **own Linux `node_modules`** into a named volume.
-  Your macOS host `node_modules` are never mounted into the containers, which
-  avoids native-binary mismatches. Source directories are bind-mounted so edits
+  Your host `node_modules` are never mounted into the containers, which avoids
+  native-binary mismatches. Source directories are bind-mounted so edits
   hot-reload.
-- The `api` service waits for Postgres to pass its healthcheck
-  (`depends_on: condition: service_healthy`) before starting.
+- Startup is ordered by healthchecks: `api` waits for Postgres, and `web` waits
+  for the API's `/health` (`depends_on: condition: service_healthy`).
 - If you change dependencies (`package.json`), rebuild so the volume picks up
   the new modules:
 
@@ -118,24 +119,23 @@ a dev-only setup.
 
 **Ollama Service**
 
-- **Purpose:** A local Ollama runtime is added to `docker-compose.yml` to serve
-  a lightweight model (TinyLlama) for local testing. Keep model lifecycle and 
-  downloads managed by Ollama.
+- **Opt-in.** Start it with `docker compose --profile llm up`. It is excluded
+  from the default stack because pulling a model is a multi-GB download and
+  nothing in `finbot-api` calls Ollama yet.
+- **Purpose:** A local Ollama runtime to serve a lightweight model (TinyLlama)
+  for local testing. Model lifecycle and downloads stay managed by Ollama.
 - **Compose file:** See [docker-compose.yml](docker-compose.yml) for the
-  `ollama` service entry. It exposes port `11434` and stores models in a
-  persistent Docker volume named `ollama-data`.
-- **API integration:** The `api` service is configured with an `OLLAMA_URL`
-  environment variable. In Compose it defaults to `http://ollama:11434` so the
-  `finbot-api` can call Ollama via `http://ollama:11434` when running together
-  in Compose.
-
-- **Model selection:** The Compose `ollama` command pulls `tinyllama`
-  by default to keep resource usage low. Change the model identifier in
-  `docker-compose.yml` if you prefer a different model.
-
+  `ollama` service entry. It publishes `OLLAMA_PORT` (default `11434`) and
+  stores models in a persistent Docker volume named `ollama-data`.
+- **API integration:** The `api` service receives an `OLLAMA_URL` environment
+  variable, defaulting to `http://ollama:11434`. Nothing reads it yet — the RAG
+  embedder in `finbot-api/src/rag/text-embedder.ts` is a local deterministic
+  vectorizer. The variable is in place for when that changes.
+- **Model selection:** Set `OLLAMA_MODEL` in `.env` (default `tinyllama`).
 
 **Notes / tips**
 
 - If you want the API to target a remote Ollama host instead of the Compose
   service, set `OLLAMA_URL` in your `.env` or override the env when you run
   Compose.
+- `11434` collides with a host-installed Ollama. Set `OLLAMA_PORT` to move it.
