@@ -4,6 +4,9 @@ This repository version-controls the Docker Compose **dev environment**. The two
 application repos are cloned into it separately and are git-ignored here, so
 changes to them are never tracked or pushed from this parent repo.
 
+Canonical cross-repository designs and implementation plans live in
+**[docs/](docs/README.md)**.
+
 - **`finbot/`** — the React Native (Expo SDK 56) mobile app, the frontend
   ([barbosaMatheus/finbot](https://github.com/barbosaMatheus/finbot.git)).
 - **`finbot-api/`** — an Express + TypeScript backend scaffold

@@ -1,0 +1,25 @@
+---
+description: Standards for canonical cross-repository design and implementation artifacts
+alwaysApply: true
+---
+
+# Canonical Design Artifacts
+
+When the user asks to output, finalize, or update a design/plan artifact:
+
+- Write it under `docs/` using `docs/TEMPLATE.md`.
+- Maintain one canonical document per cohesive problem, even across repositories.
+- Split only independently designed and versioned problems into separate documents.
+- Update the existing artifact instead of creating `v2`, `latest`, or `final` copies.
+- Record settled decisions, non-goals, current evidence, contracts, risks, and failures.
+- Use repo-scoped ticket IDs: `API-*`, `APP-*`, and `INFRA-*`.
+- Size each ticket for one agent run and one reviewable PR, normally in one repository.
+- Give every ticket dependencies, safe parallel work, acceptance criteria, tests, and handoff outputs.
+- Define ordering through a dependency graph and delivery gates; numbering alone is not order.
+- Keep diagrams in the appendix and link to them from the relevant main section.
+- Prefer Mermaid; store large external diagrams under `docs/assets/<artifact-slug>/`.
+- Include an agent-handoff section naming the ticket, repository, dependencies, and contract inputs.
+- Mark an artifact `canonical` only when no open question blocks implementation.
+
+Do not silently invent unresolved product decisions. Mark them clearly and ask the user when
+the choice would materially alter architecture, scope, security, cost, or user behavior.
