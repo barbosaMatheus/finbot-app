@@ -1196,3 +1196,4 @@ flowchart TD
 | Date | Change | Reason |
 | --- | --- | --- |
 | 2026-08-24 | Initial canonical artifact | Consolidated the agreed API-first financial onboarding design and agent-sized delivery plan |
+| 2026-08-26 | Implementation delivered: all API-*, INFRA-*, and APP-* tickets on `feature/onboarding2.0` in `finbot-api`, `finbot-app`, and `finbot` | G0–G4 executed API-first; handoff bundle in `finbot-api/handoff/`; device/Sandbox verification matrix in `finbot/docs/onboarding-verification.md` |
