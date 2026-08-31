@@ -25,7 +25,9 @@ services:
     environment:
       NODE_ENV: production
     # No source bind mounts in prod: the built image is the source of truth.
-    volumes: []
+    # A plain `[]` does NOT drop inherited list entries under compose merge
+    # semantics — it must be the !reset tag.
+    volumes: !reset []
     command: ["node", "dist/server.js"]
 
   # Without this block a prod deploy inherits the dev worker wholesale:
@@ -39,7 +41,7 @@ services:
     restart: always
     environment:
       NODE_ENV: production
-    volumes: []
+    volumes: !reset []
     command: ["node", "dist/worker.js"]
     # pg-boss gets a 30s graceful stop (src/jobs/boss.ts); Docker's default
     # 10s grace would SIGKILL mid-drain on every deploy.
@@ -50,7 +52,7 @@ services:
       context: ./finbot
       target: prod
     restart: always
-    volumes: []
+    volumes: !reset []
     # The prod target exports a static web bundle served by a lightweight
     # static file server. See finbot/Dockerfile "prod" stage.
 
