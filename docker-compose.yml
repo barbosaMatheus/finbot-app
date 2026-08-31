@@ -64,6 +64,9 @@ services:
       # Financial analysis pipeline (API worker + webhooks). Webhook signature
       # verification stays on unless you are simulating deliveries locally.
       PLAID_WEBHOOK_VERIFY: ${PLAID_WEBHOOK_VERIFY:-true}
+      # Registered with Plaid per Item so webhooks actually get delivered.
+      # Empty locally: Plaid cannot reach localhost, use a tunnel URL.
+      PLAID_WEBHOOK_URL: ${PLAID_WEBHOOK_URL:-}
       PLAID_TRANSACTION_DAYS: ${PLAID_TRANSACTION_DAYS:-180}
       PLAID_SYNC_POLL_SECONDS: ${PLAID_SYNC_POLL_SECONDS:-30}
       PLAID_SYNC_POLL_TIMEOUT_SECONDS: ${PLAID_SYNC_POLL_TIMEOUT_SECONDS:-1800}
@@ -113,6 +116,8 @@ services:
       PLAID_PRODUCTS: ${PLAID_PRODUCTS:-transactions}
       PLAID_COUNTRY_CODES: ${PLAID_COUNTRY_CODES:-US}
       PLAID_TOKEN_ENC_KEY: ${PLAID_TOKEN_ENC_KEY:-ZGV2LW9ubHkta2V5LW5vdC1mb3ItcHJvZHVjdGlvbiE=}
+      # The worker re-registers existing Items' webhook URLs at boot.
+      PLAID_WEBHOOK_URL: ${PLAID_WEBHOOK_URL:-}
       PLAID_TRANSACTION_DAYS: ${PLAID_TRANSACTION_DAYS:-180}
       PLAID_SYNC_POLL_SECONDS: ${PLAID_SYNC_POLL_SECONDS:-30}
       PLAID_SYNC_POLL_TIMEOUT_SECONDS: ${PLAID_SYNC_POLL_TIMEOUT_SECONDS:-1800}
