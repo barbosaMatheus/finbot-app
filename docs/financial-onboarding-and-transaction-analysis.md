@@ -22,7 +22,7 @@ replaces: null
 FinBot will ask users to connect as many relevant financial accounts as
 possible before asking them to recall detailed financial amounts. Plaid may
 return multiple accounts from one institution and multiple Items across
-different institutions. FinBot will request up to 180 days of transactions,
+different institutions. FinBot will request up to 730 days (two years) of transactions,
 process them asynchronously, classify economic activity separately from account
 movements, detect recurring activity locally, compute deterministic facts, and
 present a coverage-aware review for correction.
@@ -59,7 +59,7 @@ tickets are sized for one agent and one reviewable pull request.
 - Purchasing Plaid's Recurring Transactions add-on in the initial release.
 - Importing CSV files, card statements, or PDFs.
 - Using an LLM to classify every transaction.
-- Requiring exactly 180 days when an institution has less history available.
+- Requiring exactly 730 days when an institution has less history available.
 - Providing investment transaction analysis.
 - Moving money, paying bills, or initiating transfers.
 - Building web push notifications; web uses polling and in-app state.
@@ -68,14 +68,14 @@ tickets are sized for one agent and one reviewable pull request.
 
 ## 4. Settled constraints
 
-- Request up to **180 days** of transaction history.
+- Request up to **730 days** (two years) of transaction history, so twice-yearly and annual bills appear at least twice.
 - Use local recurrence detection built on stored transactions.
 - Use Plaid PFCv2 as a classification signal, not an unquestioned truth.
 - Use a PostgreSQL-backed job queue; do not add Kafka, RabbitMQ, or Redis.
 - Use Expo push notifications when processing takes longer than the configured
   expected window and the review later becomes ready.
 - Keep the user in a restricted onboarding shell until review confirmation.
-- If fewer than 180 days are available, complete with an explicit coverage limit.
+- If fewer than 730 days are available, complete with an explicit coverage limit.
 - Build and validate the API before implementing the frontend counterpart.
 - Create fresh implementation branches in each affected repository.
 - Preserve one source of truth for cross-repository decisions and dependencies.
@@ -86,7 +86,7 @@ tickets are sized for one agent and one reviewable pull request.
 | --- | --- | --- | --- |
 | Artifact organization | One cross-repo artifact with repo-scoped tickets | Prevents contract and state-machine drift | Separate API/frontend plans duplicating shared design |
 | Account linking | Multi-account selection and repeated or Multi-Item Link | A complete spending picture commonly spans cards and banks | One "primary bank" connection |
-| History | Request up to 180 days | Supports stronger baselines and local recurrence detection | 30-day-only analysis |
+| History | Request up to 730 days (two years) | Long-cadence bills (semi-annual, annual) appear at least twice; stronger baselines and local recurrence detection | 30-day-only analysis |
 | Async execution | `pg-boss` worker over existing Postgres | Durable jobs without another infrastructure service | Kafka, RabbitMQ, Redis/BullMQ, request-thread work |
 | Categorization | Deterministic pipeline using PFCv2, account semantics, matching, and overrides | Fast, testable, explainable | Per-transaction LLM calls |
 | Card payments | Model purchases as economic spend and payments as account movement | Prevents double-counted spend and phantom income | Counting or dropping all checking payments silently |
@@ -243,7 +243,7 @@ product behavior is not coupled to queue internals.
 - Initial available data may produce progress, but review is built after every
   active Item reaches a terminal state for the requested run: historical-ready,
   limited-history, or failed.
-- An account with fewer than 180 available days is `limited-history`, not stuck.
+- An account with fewer than 730 available days is `limited-history`, not stuck.
 - At least one active Item must produce reviewable balances or transaction
   history. Additional failed Items become coverage limitations the user can
   resolve or accept; a run with no usable Item cannot be confirmed.
@@ -480,7 +480,7 @@ checks in the generated document and serves the same version at
   "analysis": {
     "runId": "5b910c92-1890-4dce-8912-0e496d4091a4",
     "status": "waiting_for_history",
-    "requestedLookbackDays": 180,
+    "requestedLookbackDays": 730,
     "institutions": {
       "total": 2,
       "ready": 1,
@@ -509,7 +509,7 @@ checks in the generated document and serves the same version at
   "snapshotVersion": 3,
   "status": "needs_confirmation",
   "period": {
-    "requestedDays": 180,
+    "requestedDays": 730,
     "oldestObservedDate": "2026-03-04",
     "throughDate": "2026-08-24"
   },
@@ -720,7 +720,7 @@ Progress copy uses concrete milestones such as “3 accounts connected” and
 
 ### API-006 — Implement cursor-based transaction sync
 
-- **Objective:** Import up to 180 available days independently for every Item.
+- **Objective:** Import up to 730 available days independently for every Item.
 - **Scope:** initial sync, `has_more`, cursor transactionality, one-Item lock,
   account refresh, job chaining, limited-history metadata.
 - **Acceptance:** mocked pagination and cursor crash recovery tests pass; link
@@ -977,7 +977,7 @@ Progress copy uses concrete milestones such as “3 accounts connected” and
 - Two institutions with independent cursor timing.
 - Card purchase and matched checking payment counted once.
 - Unlinked external card payment creates coverage exception.
-- Less than 180 days completes as limited history.
+- Less than 730 days completes as limited history.
 - Manual wizard finishes before analysis and enters waiting.
 - Delayed completion sends one push and opens review.
 - Correction recomputes facts; confirmation unlocks app.
