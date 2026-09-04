@@ -61,6 +61,17 @@ services:
       # Dev-only key so Plaid access tokens are still encrypted at rest locally.
       # Generate a real one for any shared environment (see .env.example).
       PLAID_TOKEN_ENC_KEY: ${PLAID_TOKEN_ENC_KEY:-ZGV2LW9ubHkta2V5LW5vdC1mb3ItcHJvZHVjdGlvbiE=}
+      # Financial analysis pipeline (API worker + webhooks). Webhook signature
+      # verification stays on unless you are simulating deliveries locally.
+      PLAID_WEBHOOK_VERIFY: ${PLAID_WEBHOOK_VERIFY:-true}
+      # Registered with Plaid per Item so webhooks actually get delivered.
+      # Empty locally: Plaid cannot reach localhost, use a tunnel URL.
+      PLAID_WEBHOOK_URL: ${PLAID_WEBHOOK_URL:-}
+      PLAID_TRANSACTION_DAYS: ${PLAID_TRANSACTION_DAYS:-180}
+      PLAID_SYNC_POLL_SECONDS: ${PLAID_SYNC_POLL_SECONDS:-30}
+      PLAID_SYNC_POLL_TIMEOUT_SECONDS: ${PLAID_SYNC_POLL_TIMEOUT_SECONDS:-1800}
+      ANALYSIS_EXPECTED_WINDOW_SECONDS: ${ANALYSIS_EXPECTED_WINDOW_SECONDS:-120}
+      PGBOSS_SCHEMA: ${PGBOSS_SCHEMA:-pgboss}
       # Unused by the API today; wired up for when the ollama profile is on.
       OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
       SEED_TEST_DATA: ${SEED_TEST_DATA:-true}
@@ -69,6 +80,53 @@ services:
       TEST_USER_ONBOARDING_COMPLETE: ${TEST_USER_ONBOARDING_COMPLETE:-false}
     ports:
       - "${API_PORT:-3000}:3000"
+    volumes:
+      - ./finbot-api:/app
+      - api-node-modules:/app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - finbot-net
+
+  # Background worker (API-004/INFRA-001): same image as the API, different
+  # command. Owns Plaid sync and the analysis pipeline; the API only
+  # enqueues. Scale with `docker compose up --scale worker=2` if needed —
+  # handlers are idempotent and pg-boss serializes per-queue work.
+  worker:
+    build:
+      context: ./finbot-api
+      target: dev
+    init: true
+    restart: unless-stopped
+    command: ["npm", "run", "worker"]
+    # The dev image's healthcheck probes the API port; the worker serves no
+    # HTTP, so that check would read as unhealthy forever.
+    healthcheck:
+      disable: true
+    env_file:
+      - path: ./.env
+        required: false
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: ${DATABASE_URL:-postgres://finbot:finbot@db:5432/finbot}
+      PLAID_CLIENT_ID: ${PLAID_CLIENT_ID:-}
+      PLAID_SECRET: ${PLAID_SECRET:-}
+      PLAID_ENV: ${PLAID_ENV:-sandbox}
+      PLAID_PRODUCTS: ${PLAID_PRODUCTS:-transactions}
+      PLAID_COUNTRY_CODES: ${PLAID_COUNTRY_CODES:-US}
+      PLAID_TOKEN_ENC_KEY: ${PLAID_TOKEN_ENC_KEY:-ZGV2LW9ubHkta2V5LW5vdC1mb3ItcHJvZHVjdGlvbiE=}
+      # The worker re-registers existing Items' webhook URLs at boot.
+      PLAID_WEBHOOK_URL: ${PLAID_WEBHOOK_URL:-}
+      PLAID_TRANSACTION_DAYS: ${PLAID_TRANSACTION_DAYS:-180}
+      PLAID_SYNC_POLL_SECONDS: ${PLAID_SYNC_POLL_SECONDS:-30}
+      PLAID_SYNC_POLL_TIMEOUT_SECONDS: ${PLAID_SYNC_POLL_TIMEOUT_SECONDS:-1800}
+      ANALYSIS_EXPECTED_WINDOW_SECONDS: ${ANALYSIS_EXPECTED_WINDOW_SECONDS:-120}
+      PGBOSS_SCHEMA: ${PGBOSS_SCHEMA:-pgboss}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-dev-only-access-secret-change-me}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dev-only-refresh-secret-change-me}
+      PG_VECTOR_SIZE: ${PG_VECTOR_SIZE:-768}
+      SEED_TEST_DATA: "false"
     volumes:
       - ./finbot-api:/app
       - api-node-modules:/app/node_modules
