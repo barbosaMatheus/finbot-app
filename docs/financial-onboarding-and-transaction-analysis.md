@@ -320,7 +320,16 @@ The existing `detectRecurring` function is a starting point and must be expanded
 - measure amount variance for utilities and other variable bills;
 - exclude internal transfers and card-payment pairs from subscriptions;
 - emit evidence, cadence, average/last amount, occurrence count, and confidence band;
-- never silently label a low-confidence stream as a confirmed subscription.
+- never silently label a low-confidence stream as a confirmed subscription;
+- carry what a plan needs to *expect* the next posting rather than know it
+  (gameplan step 1, migration 015, `recur-v3`): `anchorDayOfMonth` (median
+  calendar day, monthly and longer cadences), `dateJitterDays` (90th
+  percentile of |gap − median gap|, floored at 2), `amountClass` (fixed ≤ 0.05,
+  variable ≤ 0.50, erratic — from the relative variance) and `planningAmount`
+  (fixed → the last posting; variable → the higher of the last posting and the
+  75th percentile of the last 24 amounts kept in `evidence.amounts`; erratic →
+  none, not a bill; inflows → none). The review shows the planning amount,
+  range and landing day, so what the user confirms is what the plan reserves.
 
 ### 8.7 Facts and coverage
 
@@ -1198,3 +1207,4 @@ flowchart TD
 | 2026-08-24 | Initial canonical artifact | Consolidated the agreed API-first financial onboarding design and agent-sized delivery plan |
 | 2026-08-26 | Implementation delivered: all API-*, INFRA-*, and APP-* tickets on `feature/onboarding2.0` in `finbot-api`, `finbot-app`, and `finbot` | G0–G4 executed API-first; handoff bundle in `finbot-api/handoff/`; device/Sandbox verification matrix in `finbot/docs/onboarding-verification.md` |
 | 2026-09-02 | Manual profile v2: the wizard asks only what connected accounts cannot answer (first name, dependents, shared accounts, income pattern, off-book obligations, upcoming events, one main goal plus optional extras and a savings target, coaching pace, free text). `user_info` drops every derived money column (migration 012); `income_override` is written only by review corrections; the structured answers are embedded as a plain-language profile document alongside the free text | The first live Sandbox pass showed the wizard still asking for take-home pay and five other figures the facts engine derives, creating a second, contradictory source for the same numbers. Design: venture note `onboarding-questions-v2.md` (locked 2026-09-02) |
+| 2026-09-04 | Gameplan step 1 — recurrence carries planning fields: `anchor_day_of_month`, `date_jitter_days`, `amount_class`, `planning_amount` on `recurring_streams` (migration 015, `recur-v3`) and `evidence.amounts` (≤ 24); facts `recurring.outflows` gains them plus `cadenceDays`, `lastAmount` and `amountRange` (`facts-v4`); the review row and the confirm card show the planning amount, range and landing day | The gameplan engine expects bills rather than knowing them (venture note `gameplan-generation.md` §10.2–10.3, locked 2026-09-04): a window from the calendar anchor and observed jitter, a planning amount by amount class, shown at review so what the user confirms is what the plan reserves |
