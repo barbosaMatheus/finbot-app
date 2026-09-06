@@ -76,6 +76,7 @@ services:
       # opt-in profile below (OLLAMA_MODEL must be one it pulled); `anthropic`
       # needs ANTHROPIC_API_KEY. Every number the model writes is checked
       # against its input, so a weak or absent model degrades to templates.
+      # POST /chat-prompt uses the same OLLAMA_URL and OLLAMA_MODEL.
       LLM_PROVIDER: ${LLM_PROVIDER:-template}
       OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-tinyllama}
@@ -183,8 +184,8 @@ services:
       - finbot-net
 
   # Opt-in: `docker compose --profile llm up`. Pulling a model is a multi-GB
-  # download, and nothing in finbot-api calls Ollama yet, so it stays out of the
-  # default up.
+  # download, so it stays out of the default up. Serves the model queried by the
+  # API's POST /chat-prompt endpoint.
   ollama:
     image: ollama/ollama:latest
     profiles: ["llm"]

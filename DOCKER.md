@@ -222,8 +222,9 @@ host-installed Ollama, which is common.
 To test the gameplan narration against a real model — the harness, the app
 walk, what to report — follow `MODEL-TESTING.md`.
 
-`OLLAMA_URL` is passed to the API but nothing reads it yet; the RAG embedder in
-`finbot-api/src/rag/text-embedder.ts` is a local deterministic vectorizer.
+`OLLAMA_URL` and `OLLAMA_MODEL` are passed to the API, which uses them for the
+`POST /chat-prompt` endpoint (retrieved-context RAG completion). Start the
+profile before exercising that endpoint.
 
 ## Troubleshooting
 

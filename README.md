@@ -127,17 +127,16 @@ a dev-only setup.
 **Ollama Service**
 
 - **Opt-in.** Start it with `docker compose --profile llm up`. It is excluded
-  from the default stack because pulling a model is a multi-GB download and
-  nothing in `finbot-api` calls Ollama yet.
+  from the default stack because pulling a model is a multi-GB download.
 - **Purpose:** A local Ollama runtime to serve a lightweight model (TinyLlama)
   for local testing. Model lifecycle and downloads stay managed by Ollama.
 - **Compose file:** See [docker-compose.yml](docker-compose.yml) for the
   `ollama` service entry. It publishes `OLLAMA_PORT` (default `11434`) and
   stores models in a persistent Docker volume named `ollama-data`.
-- **API integration:** The `api` service receives an `OLLAMA_URL` environment
-  variable, defaulting to `http://ollama:11434`. Nothing reads it yet — the RAG
-  embedder in `finbot-api/src/rag/text-embedder.ts` is a local deterministic
-  vectorizer. The variable is in place for when that changes.
+- **API integration:** The `api` service receives `OLLAMA_URL` and
+  `OLLAMA_MODEL`, defaulting to `http://ollama:11434` / `tinyllama`, and uses
+  them for the `POST /chat-prompt` endpoint, which retrieves the user's related
+  context from the vector DB and runs the templated prompt through the model.
 - **Model selection:** Set `OLLAMA_MODEL` in `.env` (default `tinyllama`).
 
 **Notes / tips**
