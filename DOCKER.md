@@ -219,6 +219,9 @@ Pulls `tinyllama` on first start into the `ollama-data` volume. Override with
 `OLLAMA_MODEL` and `OLLAMA_PORT` in `.env` — `11434` collides with a
 host-installed Ollama, which is common.
 
+To test the gameplan narration against a real model — the harness, the app
+walk, what to report — follow `MODEL-TESTING.md`.
+
 `OLLAMA_URL` is passed to the API but nothing reads it yet; the RAG embedder in
 `finbot-api/src/rag/text-embedder.ts` is a local deterministic vectorizer.
 
