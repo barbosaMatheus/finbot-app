@@ -135,6 +135,12 @@ npx expo run:ios          # or run:android
 A physical device cannot reach `http://localhost:3000` — that resolves to the
 phone. Use your machine's LAN IP.
 
+For a phone build that behaves like production — an APK from EAS, push through
+FCM, Plaid Link in-app, the API over an HTTPS tunnel — follow
+`finbot/docs/android-build.md`. The compose side of that is two `.env` values,
+`PLAID_WEBHOOK_URL` (the tunnel) and `PLAID_ANDROID_PACKAGE_NAME`, which Plaid
+requires on every Android Link session.
+
 ## Inspect the database
 
 ```bash

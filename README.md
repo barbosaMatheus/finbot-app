@@ -106,6 +106,10 @@ Local device/simulator development still works on the host as usual
 (`cd finbot && npx expo run:ios` / `run:android`). The Docker setup covers the
 web + backend + database development loop.
 
+The end-to-end Android procedure — Firebase credentials for push, the EAS
+environment variables, an HTTPS tunnel for the API, the preview APK, and the
+walk on the phone — is `finbot/docs/android-build.md`.
+
 ## Production seam
 
 `docker-compose.prod.yml` is a thin override that selects the `prod` build
