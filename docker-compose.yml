@@ -202,7 +202,7 @@ services:
       - |
         ollama serve &
         until ollama list >/dev/null 2>&1; do sleep 1; done
-        ollama pull ${OLLAMA_MODEL:-tinyllama}
+        ollama pull ${OLLAMA_MODEL:-qwen3.5-mini}
         wait
     healthcheck:
       test: ["CMD", "ollama", "list"]
