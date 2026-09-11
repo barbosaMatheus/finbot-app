@@ -135,10 +135,10 @@ a dev-only setup.
   `ollama` service entry. It publishes `OLLAMA_PORT` (default `11434`) and
   stores models in a persistent Docker volume named `ollama-data`.
 - **API integration:** The `api` service receives `OLLAMA_URL` and
-  `OLLAMA_MODEL`, defaulting to `http://ollama:11434` / `qwen3.5-mini`, and uses
+  `OLLAMA_MODEL`, defaulting to `http://ollama:11434` / `llama3.1`, and uses
   them for the `POST /chat-prompt` endpoint, which retrieves the user's related
   context from the vector DB and runs the templated prompt through the model.
-- **Model selection:** Set `OLLAMA_MODEL` in `.env` (default `qwen3.5-mini`).
+- **Model selection:** Set `OLLAMA_MODEL` in `.env` (default `llama3.1`).
 
 **Notes / tips**
 

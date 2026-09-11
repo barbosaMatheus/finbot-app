@@ -79,7 +79,7 @@ services:
       # POST /chat-prompt uses the same OLLAMA_URL and OLLAMA_MODEL.
       LLM_PROVIDER: ${LLM_PROVIDER:-template}
       OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
-      OLLAMA_MODEL: ${OLLAMA_MODEL:-tinyllama}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.1}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-opus-5}
       ANTHROPIC_EFFORT: ${ANTHROPIC_EFFORT:-low}
@@ -202,7 +202,7 @@ services:
       - |
         ollama serve &
         until ollama list >/dev/null 2>&1; do sleep 1; done
-        ollama pull ${OLLAMA_MODEL:-qwen3.5-mini}
+        ollama pull ${OLLAMA_MODEL:-llama3.1}
         wait
     healthcheck:
       test: ["CMD", "ollama", "list"]

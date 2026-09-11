@@ -215,7 +215,7 @@ docker volume rm finbot-app_db-data finbot-app_api-node-modules finbot-app_web-n
 docker compose --profile llm up
 ```
 
-Pulls `qwen3.5-mini` on first start into the `ollama-data` volume. Override with
+Pulls `llama3.1` on first start into the `ollama-data` volume. Override with
 `OLLAMA_MODEL` and `OLLAMA_PORT` in `.env` — `11434` collides with a
 host-installed Ollama, which is common.
 
