@@ -139,7 +139,7 @@ services:
       # The worker builds and grades plans, so it narrates too (same as api).
       LLM_PROVIDER: ${LLM_PROVIDER:-template}
       OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
-      OLLAMA_MODEL: ${OLLAMA_MODEL:-tinyllama}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.1}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-opus-5}
       ANTHROPIC_EFFORT: ${ANTHROPIC_EFFORT:-low}
@@ -172,6 +172,9 @@ services:
       # Inlined into the bundle by Expo. Keeps the client pointed at the API
       # even when API_PORT is changed.
       EXPO_PUBLIC_API_BASE_URL: ${EXPO_PUBLIC_API_BASE_URL:-http://localhost:${API_PORT:-3000}}
+      # Also inlined at bundle time. Maps the top-level CHAT_MAX_CHARS variable
+      # onto the EXPO_PUBLIC_ prefix Expo exposes to the app.
+      EXPO_PUBLIC_CHAT_MAX_CHARS: ${CHAT_MAX_CHARS:-256}
     ports:
       - "${WEB_PORT:-8081}:8081"
     depends_on:
