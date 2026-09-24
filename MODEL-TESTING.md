@@ -184,8 +184,15 @@ What you see, in order:
    | `fallback` | why it was thrown away: `client_error` (the host did not answer — timeout, wrong model name, wrong URL), `malformed` (the reply was not the JSON shape asked for), `number_invented` (the containment check fired), `no_provider` (no model configured) |
    | `invented` | the numbers the raw model text contained that were not in its input |
 
-4. Two summary lines: how many calls the model answered, and
-   `fabricated-number rate: X/N = P%`.
+4. Three summary lines: how many calls the model answered; how many
+   replies were well-formed, malformed, or client errors; and
+   `fabricated-number rate: X/N = P%`, measured over the well-formed
+   replies only. A malformed reply (for example a small model looping on
+   one line until the token budget cut it off) is a separate failure and
+   is counted on its own line; the numbers shown on its row do not count
+   toward the rate, because no sentence of it was ever a candidate to be
+   shown. A `client_error` on the first scenario only, right after the
+   stack or Ollama started, is the model loading; run again.
 5. `regression: green` or a failure count. The command exits non-zero on a
    failure.
 
