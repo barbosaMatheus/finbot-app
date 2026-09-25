@@ -72,8 +72,17 @@ services:
       PLAID_SYNC_POLL_TIMEOUT_SECONDS: ${PLAID_SYNC_POLL_TIMEOUT_SECONDS:-1800}
       ANALYSIS_EXPECTED_WINDOW_SECONDS: ${ANALYSIS_EXPECTED_WINDOW_SECONDS:-120}
       PGBOSS_SCHEMA: ${PGBOSS_SCHEMA:-pgboss}
-      # Unused by the API today; wired up for when the ollama profile is on.
+      # Gameplan narration. `template` needs no model host; `ollama` uses the
+      # opt-in profile below (OLLAMA_MODEL must be one it pulled); `anthropic`
+      # needs ANTHROPIC_API_KEY. Every number the model writes is checked
+      # against its input, so a weak or absent model degrades to templates.
+      LLM_PROVIDER: ${LLM_PROVIDER:-template}
       OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-tinyllama}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-opus-5}
+      ANTHROPIC_EFFORT: ${ANTHROPIC_EFFORT:-low}
+      LLM_TIMEOUT_MS: ${LLM_TIMEOUT_MS:-20000}
       SEED_TEST_DATA: ${SEED_TEST_DATA:-true}
       TEST_USER_EMAIL: ${TEST_USER_EMAIL:-user@test.com}
       TEST_USER_PASSWORD: ${TEST_USER_PASSWORD:-1234qwer}
@@ -126,6 +135,14 @@ services:
       JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-dev-only-access-secret-change-me}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dev-only-refresh-secret-change-me}
       PG_VECTOR_SIZE: ${PG_VECTOR_SIZE:-768}
+      # The worker builds and grades plans, so it narrates too (same as api).
+      LLM_PROVIDER: ${LLM_PROVIDER:-template}
+      OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-tinyllama}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-opus-5}
+      ANTHROPIC_EFFORT: ${ANTHROPIC_EFFORT:-low}
+      LLM_TIMEOUT_MS: ${LLM_TIMEOUT_MS:-20000}
       SEED_TEST_DATA: "false"
     volumes:
       - ./finbot-api:/app

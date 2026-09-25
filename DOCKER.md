@@ -185,6 +185,8 @@ docker compose logs -f api         # follow one service's logs
 docker compose down                # stop
 ```
 
+**One-shot clean rebuild (Windows)** — `scripts\rebuild.cmd` (or `.\scripts\rebuild.ps1`) stops the project, drops the `node_modules` volumes, removes the images compose built and rebuilds them with `--no-cache`, then starts the stack again. Data is kept; `-WipeData` also drops the database and Ollama volumes, `-WithLlm` includes Ollama, `-NoStart` leaves the stack down, `-DryRun` prints the commands without running them.
+
 Reset containers **and** volumes — wipes DB data and the container
 `node_modules`:
 
