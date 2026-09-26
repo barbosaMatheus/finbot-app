@@ -11,7 +11,7 @@ set -euo pipefail
 
 COMPOSE_CMD="docker compose --profile llm"
 SERVICE="ollama"
-MODEL="${OLLAMA_MODEL:-tinyllama}"
+MODEL="${OLLAMA_MODEL:-llama3.1}"
 PORT="${OLLAMA_PORT:-11434}"
 BASE_URL="http://localhost:${PORT}"
 

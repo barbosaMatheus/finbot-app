@@ -215,15 +215,19 @@ docker volume rm finbot-app_db-data finbot-app_api-node-modules finbot-app_web-n
 docker compose --profile llm up
 ```
 
-Pulls `tinyllama` on first start into the `ollama-data` volume. Override with
+Pulls `llama3.1` on first start into the `ollama-data` volume. Override with
 `OLLAMA_MODEL` and `OLLAMA_PORT` in `.env` — `11434` collides with a
 host-installed Ollama, which is common.
 
 To test the gameplan narration against a real model — the harness, the app
 walk, what to report — follow `MODEL-TESTING.md`.
 
-`OLLAMA_URL` is passed to the API but nothing reads it yet; the RAG embedder in
-`finbot-api/src/rag/text-embedder.ts` is a local deterministic vectorizer.
+`POST /chat-prompt` (retrieved-context chat) goes through the same model seam
+as the gameplan narration: set `LLM_PROVIDER=ollama` (or `anthropic`) and it
+uses the same `OLLAMA_URL` and `OLLAMA_MODEL`. With `LLM_PROVIDER=template`
+chat answers 503, because there is no template answer to a question. A reply
+that states a number the model was not given is withheld and a fixed sentence
+says so.
 
 ## Troubleshooting
 
