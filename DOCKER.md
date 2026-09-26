@@ -222,9 +222,12 @@ host-installed Ollama, which is common.
 To test the gameplan narration against a real model — the harness, the app
 walk, what to report — follow `MODEL-TESTING.md`.
 
-`OLLAMA_URL` and `OLLAMA_MODEL` are passed to the API, which uses them for the
-`POST /chat-prompt` endpoint (retrieved-context RAG completion). Start the
-profile before exercising that endpoint.
+`POST /chat-prompt` (retrieved-context chat) goes through the same model seam
+as the gameplan narration: set `LLM_PROVIDER=ollama` (or `anthropic`) and it
+uses the same `OLLAMA_URL` and `OLLAMA_MODEL`. With `LLM_PROVIDER=template`
+chat answers 503, because there is no template answer to a question. A reply
+that states a number the model was not given is withheld and a fixed sentence
+says so.
 
 ## Troubleshooting
 

@@ -76,7 +76,7 @@ services:
       # opt-in profile below (OLLAMA_MODEL must be one it pulled); `anthropic`
       # needs ANTHROPIC_API_KEY. Every number the model writes is checked
       # against its input, so a weak or absent model degrades to templates.
-      # POST /chat-prompt uses the same OLLAMA_URL and OLLAMA_MODEL.
+      # POST /chat-prompt follows LLM_PROVIDER too (503 under `template`).
       LLM_PROVIDER: ${LLM_PROVIDER:-template}
       OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.1}

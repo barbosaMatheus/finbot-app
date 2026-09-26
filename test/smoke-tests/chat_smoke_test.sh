@@ -10,6 +10,9 @@ set -euo pipefail
 #
 # Passes as long as the model returns a response with a 2XX status.
 
+# Chat goes through the API's model seam, so the stack must select a model
+# host. The shell value wins over .env for compose interpolation.
+export LLM_PROVIDER="${LLM_PROVIDER:-ollama}"
 COMPOSE_CMD="docker compose --profile llm"
 API_URL="${API_URL:-http://localhost:${API_PORT:-3000}}"
 TEST_USER_EMAIL="${TEST_USER_EMAIL:-user@test.com}"
