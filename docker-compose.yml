@@ -76,9 +76,10 @@ services:
       # opt-in profile below (OLLAMA_MODEL must be one it pulled); `anthropic`
       # needs ANTHROPIC_API_KEY. Every number the model writes is checked
       # against its input, so a weak or absent model degrades to templates.
+      # POST /chat-prompt follows LLM_PROVIDER too (503 under `template`).
       LLM_PROVIDER: ${LLM_PROVIDER:-template}
       OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
-      OLLAMA_MODEL: ${OLLAMA_MODEL:-tinyllama}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.1}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-opus-5}
       ANTHROPIC_EFFORT: ${ANTHROPIC_EFFORT:-low}
@@ -138,7 +139,7 @@ services:
       # The worker builds and grades plans, so it narrates too (same as api).
       LLM_PROVIDER: ${LLM_PROVIDER:-template}
       OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
-      OLLAMA_MODEL: ${OLLAMA_MODEL:-tinyllama}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.1}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-opus-5}
       ANTHROPIC_EFFORT: ${ANTHROPIC_EFFORT:-low}
@@ -171,6 +172,9 @@ services:
       # Inlined into the bundle by Expo. Keeps the client pointed at the API
       # even when API_PORT is changed.
       EXPO_PUBLIC_API_BASE_URL: ${EXPO_PUBLIC_API_BASE_URL:-http://localhost:${API_PORT:-3000}}
+      # Also inlined at bundle time. Maps the top-level CHAT_MAX_CHARS variable
+      # onto the EXPO_PUBLIC_ prefix Expo exposes to the app.
+      EXPO_PUBLIC_CHAT_MAX_CHARS: ${CHAT_MAX_CHARS:-256}
     ports:
       - "${WEB_PORT:-8081}:8081"
     depends_on:
@@ -183,8 +187,8 @@ services:
       - finbot-net
 
   # Opt-in: `docker compose --profile llm up`. Pulling a model is a multi-GB
-  # download, and nothing in finbot-api calls Ollama yet, so it stays out of the
-  # default up.
+  # download, so it stays out of the default up. Serves the model queried by the
+  # API's POST /chat-prompt endpoint.
   ollama:
     image: ollama/ollama:latest
     profiles: ["llm"]
@@ -201,7 +205,7 @@ services:
       - |
         ollama serve &
         until ollama list >/dev/null 2>&1; do sleep 1; done
-        ollama pull ${OLLAMA_MODEL:-tinyllama}
+        ollama pull ${OLLAMA_MODEL:-llama3.1}
         wait
     healthcheck:
       test: ["CMD", "ollama", "list"]
