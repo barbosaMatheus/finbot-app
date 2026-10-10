@@ -14,7 +14,8 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-finbot}
       POSTGRES_DB: ${POSTGRES_DB:-finbot}
     ports:
-      - "${DB_PORT:-5432}:5432"
+      # - "${DB_PORT:-5432}:5432"
+      - "127.0.0.1:${DB_PORT:-5432}:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:
