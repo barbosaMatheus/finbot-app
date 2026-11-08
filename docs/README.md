@@ -8,16 +8,16 @@ handoff requirements agreed during design discussions.
 ## Document strategy
 
 Use **one canonical artifact per cohesive problem**, even when implementation
-crosses `finbot-api`, `finbot`, and this parent infrastructure repository.
+crosses `finbot-api/`, `finbot/`, and the root infrastructure.
 
 Do not split a design into separate API and frontend documents merely because
-the code lives in separate repositories. Doing so duplicates shared decisions,
+the code lives in separate folders. Doing so duplicates shared decisions,
 state machines, and contracts and makes drift more likely. Instead, keep
 repo-scoped ticket tracks in the same artifact:
 
 - `API-*` for `finbot-api`
 - `APP-*` for `finbot`
-- `INFRA-*` for this parent `finbot-app` repository
+- `INFRA-*` for the root (Compose, shared configuration)
 
 Create separate canonical artifacts only when the subjects can be designed,
 approved, replaced, and implemented independently.

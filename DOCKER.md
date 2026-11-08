@@ -3,16 +3,15 @@
 ## Quick start
 
 ```bash
-git clone <finbot-app-repo-url> finbot-app
+git clone https://github.com/barbosaMatheus/finbot-app.git
 cd finbot-app
-./scripts/clone-apps.sh          # Windows: see "Cloning on Windows" below
 docker compose up --build
 ```
 
 That's it — no `.env` needed. Open http://localhost:8081.
 
-Compose ships working defaults for every variable, so a fresh clone comes up as
-long as the two inner app repos exist. You only need a `.env` to override
+Compose ships working defaults for every variable, so a fresh clone comes up
+as is. You only need a `.env` to override
 something, and the main reason to is Plaid credentials (see
 [Connecting a bank](#connecting-a-bank)).
 
@@ -44,28 +43,7 @@ lsof -nP -iTCP:5432 -sTCP:LISTEN
 Get-NetTCPConnection -LocalPort 5432 -State Listen
 ```
 
-## 1. Clone the app repos
-
-`finbot/` and `finbot-api/` are separate repositories and are git-ignored here.
-They must exist next to `docker-compose.yml` before Compose can build.
-
-```bash
-./scripts/clone-apps.sh
-```
-
-Or manually:
-
-```bash
-git clone https://github.com/barbosaMatheus/finbot-api.git finbot-api
-git clone https://github.com/barbosaMatheus/finbot.git finbot
-```
-
-### Cloning on Windows
-
-`scripts/clone-apps.sh` is a bash script. Run it from Git Bash or WSL, or just
-run the two `git clone` commands above in PowerShell.
-
-## 2. Configure environment (optional)
+## 1. Configure environment (optional)
 
 ```bash
 cp .env.example .env
@@ -79,7 +57,7 @@ bank connection flow to work.
 > on your machine (`cd finbot-api && npm run dev`). Compose does not read it. See
 > `finbot-api/.env.example`.
 
-## 3. Start the stack
+## 2. Start the stack
 
 ```bash
 docker compose up --build
@@ -88,7 +66,7 @@ docker compose up --build
 Startup order is enforced by healthchecks: `db` becomes healthy, then `api`
 starts and runs its migrations, then `web` boots once `/health` responds.
 
-## 4. Open the app
+## 3. Open the app
 
 - Frontend: http://localhost:8081
 - API health: http://localhost:3000/health

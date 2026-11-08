@@ -1,16 +1,14 @@
 # FinBot
 
-This repository version-controls the Docker Compose **dev environment**. The two
-application repos are cloned into it separately and are git-ignored here, so
-changes to them are never tracked or pushed from this parent repo.
+A monorepo: the Expo app, the API, and the Docker Compose dev environment that
+runs them together. Each app keeps its own `package.json`, lockfile, and
+Dockerfile; there are no npm workspaces.
 
-Canonical cross-repository designs and implementation plans live in
+Canonical designs that span both apps and implementation plans live in
 **[docs/](docs/README.md)**.
 
-- **`finbot/`** — the React Native (Expo SDK 56) mobile app, the frontend
-  ([barbosaMatheus/finbot](https://github.com/barbosaMatheus/finbot.git)).
-- **`finbot-api/`** — an Express + TypeScript backend scaffold
-  ([barbosaMatheus/finbot-api](https://github.com/barbosaMatheus/finbot-api.git)).
+- **`finbot/`** — the React Native (Expo SDK 56) mobile app, the frontend.
+- **`finbot-api/`** — the Express + TypeScript backend.
 - **`db`** (Docker) — a Postgres 16 instance the API depends on.
 
 ## Running with Docker (development)
@@ -18,22 +16,16 @@ Canonical cross-repository designs and implementation plans live in
 The root `docker-compose.yml` runs the database, API, and Expo web client
 together with hot reload. Full guide: **[DOCKER.md](DOCKER.md)**.
 
-### 1. Clone the inner app repos
-
-The `finbot/` and `finbot-api/` folders are git-ignored and must be cloned into
-this directory. Use the helper script:
+### 1. Clone
 
 ```bash
-./scripts/clone-apps.sh
+git clone https://github.com/barbosaMatheus/finbot-app.git
+cd finbot-app
 ```
 
-It clones both repos (and pulls the latest if they already exist). Or clone them
-manually:
-
-```bash
-git clone https://github.com/barbosaMatheus/finbot-api.git finbot-api
-git clone https://github.com/barbosaMatheus/finbot.git finbot
-```
+Both apps come with it. (Until November 2026 they lived in their own
+repositories, `barbosaMatheus/finbot` and `barbosaMatheus/finbot-api`; their
+`main` history is preserved here under each folder.)
 
 ### 2. Configure environment (optional)
 

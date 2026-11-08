@@ -2,7 +2,7 @@
 
 A step-by-step run for one person, start to finish. It takes about two
 hours of your attention plus model time. You will need Docker Desktop, the
-three repositories, Plaid Sandbox keys, and one of the model hosts in step 2.
+`finbot-app` repository, Plaid Sandbox keys, and one of the model hosts in step 2.
 
 ## What you are testing, in one minute
 
@@ -37,17 +37,12 @@ Chat is not part of this test; it still answers from canned replies.
 
 ## 1. Get the code
 
-The model work lives on the `feature/gameplan-engine` branch of all three
-repositories until the pull requests (finbot-api #21, finbot #24,
-finbot-app #7) are merged. After the merge, `main` is right.
+The model work is on `main`.
 
 ```bash
 git clone https://github.com/barbosaMatheus/finbot-app.git   # skip if you have it
 cd finbot-app
-git checkout feature/gameplan-engine && git pull
-scripts/clone-apps.sh          # first time only: clones finbot/ and finbot-api/
-(cd finbot     && git fetch && git checkout feature/gameplan-engine && git pull)
-(cd finbot-api && git fetch && git checkout feature/gameplan-engine && git pull)
+git checkout main && git pull
 ```
 
 If you have no `.env` yet: `cp .env.example .env` and put your Plaid Sandbox
