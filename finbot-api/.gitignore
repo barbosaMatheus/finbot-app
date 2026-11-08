@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.env
+.env.*
+# ...but the template must stay tracked.
+!.env.example
+logs/
+*.log
+coverage/
+.vscode/
+.DS_Store
